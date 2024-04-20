@@ -1,6 +1,6 @@
-const Schema = require("mongoose").Schema;
+const mongoose = require("mongoose");
 
-exports.UserSchema = new Schema(
+const UserSchema = new mongoose.Schema(
   {
     username: {
       type: String,
@@ -13,3 +13,6 @@ exports.UserSchema = new Schema(
   },
   { collection: "usersPswdMng" }
 );
+
+exports.UserSchema = UserSchema;
+exports.User = mongoose.model("User", UserSchema);
