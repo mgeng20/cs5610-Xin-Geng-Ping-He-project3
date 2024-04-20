@@ -18,27 +18,20 @@ export default () => {
   } = theme.useToken();
   return (
     <Layout>
-      <Header
+      <div className="demo-logo" />
+      <Menu
+        theme="dark"
+        mode="horizontal"
+        selectedKeys={[location.pathname]}
+        items={menuItems}
         style={{
-          display: "flex",
-          alignItems: "center",
+          flex: 2,
+          minWidth: 0,
         }}
-      >
-        <div className="demo-logo" />
-        <Menu
-          theme="dark"
-          mode="horizontal"
-          selectedKeys={[location.pathname]}
-          items={menuItems}
-          style={{
-            flex: 2,
-            minWidth: 0,
-          }}
-          onClick={(item) => {
-            navigate(item.key);
-          }}
-        />
-      </Header>
+        onClick={(item) => {
+          navigate(item.key);
+        }}
+      />
     </Layout>
   );
 };

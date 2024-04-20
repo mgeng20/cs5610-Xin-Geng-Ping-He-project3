@@ -1,3 +1,4 @@
+import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
 import { Button, Checkbox, Form, Input, InputNumber, Space, Table } from "antd";
 import React from "react";
 import NavBar from "../components/NavBar";
@@ -42,14 +43,14 @@ const PasswordManagerPage = () => {
         {...layout}
         name="basic"
         style={{
-          maxWidth: 480,
+          maxWidth: 600,
           margin: "auto",
           paddingTop: 60,
         }}
         initialValues={{
-          alphabet: false,
-          numerals: false,
-          symbols: false,
+          alphabet: true,
+          numbers: true,
+          symbols: true,
         }}
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
@@ -65,7 +66,7 @@ const PasswordManagerPage = () => {
             },
           ]}
         >
-          <Input />
+          <Input placeholder="Enter service name or website url" />
         </Form.Item>
 
         <Form.Item
@@ -74,27 +75,38 @@ const PasswordManagerPage = () => {
           rules={[
             {
               required: true,
-              message: "Please input your password!",
+              message: "Please input your password.",
             },
           ]}
         >
-          <Input.Password />
+          <Input.Password
+            placeholder="Enter your password or system will generate one"
+            iconRender={(visible) =>
+              visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+            }
+          />
         </Form.Item>
         <Form.Item {...tailLayout}>
           <Space>
-            <Form.Item name="alphabet" valuePropName="alphabet">
+            <Form.Item name="alphabet" valuePropName="checked">
               <Checkbox>Alphabet</Checkbox>
             </Form.Item>
 
-            <Form.Item name="numerals" valuePropName="numerals">
-              <Checkbox>Numerals</Checkbox>
+            <Form.Item name="numbers" valuePropName="checked">
+              <Checkbox>Numbers</Checkbox>
             </Form.Item>
-
-            <Form.Item name="symbols" valuePropName="symbols">
+            <Form.Item name="symbols" valuePropName="checked">
               <Checkbox>Symbols</Checkbox>
             </Form.Item>
             <Form.Item label="Length" name="length">
-              <InputNumber min={4} max={50} />
+              <InputNumber
+                min={4}
+                max={50}
+                defaultValue={12}
+                style={{
+                  width: 56,
+                }}
+              />
             </Form.Item>
           </Space>
         </Form.Item>
@@ -110,7 +122,7 @@ const PasswordManagerPage = () => {
       </Form>
       <div>
         <Table
-          style={{ margin: 20 }}
+          style={{ margin: 20, marginTop: 60 }}
           columns={passwordListColumnConfig}
           dataSource={data}
         />
