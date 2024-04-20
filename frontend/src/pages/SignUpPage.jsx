@@ -1,11 +1,12 @@
 import { Button, Form, Input, message } from "antd";
+import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
 
-const onFinish = (values) => {
-  console.log("Success:", values);
-};
+// const onFinish = (values) => {
+//   console.log("Success:", values);
+// };
 const onFinishFailed = (errorInfo) => {
   console.log("Failed:", errorInfo);
 };
@@ -23,6 +24,25 @@ const SignUpPage = () => {
   function setPassword(event) {
     const pswd = event.target.value;
     setPasswordInput(pswd);
+  }
+
+  async function handleSignup() {
+    try {
+      const res = await axios.post("/signup", {
+        username: usernameInput,
+        password: passwordInput,
+      });
+      // Assuming the server responds with a success message
+      messageApi.success("Signup successful");
+      // Redirect to dashboard or home page
+      navigate("/login"); // Adjust the route as per your application
+    } catch (error) {
+      // Handle errors such as incorrect credentials
+      messageApi.error(
+        "Login failed. Please check your credentials.",
+        error.response.data
+      );
+    }
   }
   return (
     <>
@@ -80,7 +100,7 @@ const SignUpPage = () => {
             span: 16,
           }}
         >
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" onClick={handleSignup}>
             Signup
           </Button>
         </Form.Item>
