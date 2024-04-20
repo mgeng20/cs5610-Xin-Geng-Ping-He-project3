@@ -1,6 +1,6 @@
-const Schema = require("mongoose").Schema;
+const mongoose = require("mongoose");
 
-exports.PasswordSchema = new Schema(
+const PasswordSchema = new mongoose.Schema(
   {
     service: {
       type: String,
@@ -17,3 +17,6 @@ exports.PasswordSchema = new Schema(
   },
   { collection: "pswdData" }
 );
+
+exports.PasswordSchema = PasswordSchema;
+exports.Password = mongoose.model("Password", PasswordSchema);
