@@ -6,10 +6,6 @@ exports.UserSchema = new Schema(
       type: String,
       unique: true,
     },
-    email: {
-      type: String,
-      unique: true,
-    },
     password: {
       type: String,
       require: true,
