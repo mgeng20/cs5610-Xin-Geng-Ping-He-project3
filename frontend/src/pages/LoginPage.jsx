@@ -1,11 +1,9 @@
 import { Button, Form, Input, message } from "antd";
+import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
 
-const onFinish = (values) => {
-  console.log("Success:", values);
-};
 const onFinishFailed = (errorInfo) => {
   console.log("Failed:", errorInfo);
 };
@@ -26,10 +24,53 @@ const LoginPage = () => {
     setPasswordInput(pswd);
   }
 
+  async function handleLogin() {
+    try {
+      const res = await axios.post("/login", {
+        username: usernameInput,
+        password: passwordInput,
+      });
+      const { access_token } = res.data;
+      sessionStorage.setItem("access_token", access_token);
+      // Assuming the server responds with a success message
+      messageApi.success("Login successful");
+      // Redirect to dashboard or home page
+      navigate("/password-manager"); // Adjust the route as per your application
+    } catch (error) {
+      // Handle errors such as incorrect credentials
+      messageApi.error(
+        "Login failed. Please check your credentials.",
+        error.response.data
+      );
+    }
+  }
+  function handleLogin2() {
+    axios
+      .post("/login", {
+        username: usernameInput,
+        password: passwordInput,
+      })
+      .then((res) => {
+        const { access_token } = res.data;
+        sessionStorage.setItem("access_token", access_token);
+        // Assuming the server responds with a success message
+        messageApi.success("Login successful");
+        // Redirect to dashboard or home page
+        navigate("/password-manager"); // Adjust the route as per your application
+      })
+      .catch((error) => {
+        // Handle errors such as incorrect credentials
+        messageApi.error(
+          "Login failed. Please check your credentials.",
+          error.response.data
+        );
+      });
+  }
+
   return (
     <>
       <NavBar />
-
+      {messageHolder}
       <Form
         name="basic"
         labelCol={{
@@ -43,7 +84,6 @@ const LoginPage = () => {
           margin: "auto",
           paddingTop: 200,
         }}
-        onFinish={onFinish}
         onFinishFailed={onFinishFailed}
         autoComplete="off"
       >
@@ -79,7 +119,7 @@ const LoginPage = () => {
             span: 16,
           }}
         >
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" onClick={handleLogin}>
             Login
           </Button>
         </Form.Item>
