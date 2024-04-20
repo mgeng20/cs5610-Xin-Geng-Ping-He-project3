@@ -1,5 +1,6 @@
-import { Button, Form, Input } from "antd";
-import React from "react";
+import { Button, Form, Input, message } from "antd";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
 
 const onFinish = (values) => {
@@ -8,66 +9,84 @@ const onFinish = (values) => {
 const onFinishFailed = (errorInfo) => {
   console.log("Failed:", errorInfo);
 };
-const LoginPage = () => (
-  <>
-    <NavBar />
 
-    <Form
-      name="basic"
-      labelCol={{
-        span: 6,
-      }}
-      wrapperCol={{
-        span: 16,
-      }}
-      style={{
-        maxWidth: 480,
-        margin: "auto",
-        paddingTop: 200,
-      }}
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
-      autoComplete="off"
-    >
-      <Form.Item
-        label="Email"
-        name="email"
-        rules={[
-          {
-            required: true,
-            message: "Please input your username!",
-          },
-        ]}
-      >
-        <Input />
-      </Form.Item>
+const LoginPage = () => {
+  const [usernameInput, setUsernameInput] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
+  const [messageApi, messageHolder] = message.useMessage();
+  const navigate = useNavigate();
 
-      <Form.Item
-        label="Password"
-        name="password"
-        rules={[
-          {
-            required: true,
-            message: "Please input your password!",
-          },
-        ]}
-      >
-        <Input.Password />
-      </Form.Item>
+  function setUsername(event) {
+    const username = event.target.value;
+    setUsernameInput(username);
+  }
 
-      <Form.Item
+  function setPassword(event) {
+    const pswd = event.target.value;
+    setPasswordInput(pswd);
+  }
+
+  return (
+    <>
+      <NavBar />
+
+      <Form
+        name="basic"
+        labelCol={{
+          span: 6,
+        }}
         wrapperCol={{
-          offset: 8,
           span: 16,
         }}
+        style={{
+          maxWidth: 480,
+          margin: "auto",
+          paddingTop: 200,
+        }}
+        onFinish={onFinish}
+        onFinishFailed={onFinishFailed}
+        autoComplete="off"
       >
-        <Button type="primary" htmlType="submit">
-          Login
-        </Button>
-      </Form.Item>
-    </Form>
-  </>
-);
+        <Form.Item
+          label="Username"
+          name="username"
+          rules={[
+            {
+              required: true,
+              message: "Please input your username.",
+            },
+          ]}
+        >
+          <Input value={usernameInput} onChange={setUsername} />
+        </Form.Item>
+
+        <Form.Item
+          label="Password"
+          name="password"
+          rules={[
+            {
+              required: true,
+              message: "Please enter your password.",
+            },
+          ]}
+        >
+          <Input.Password value={passwordInput} onChange={setPassword} />
+        </Form.Item>
+
+        <Form.Item
+          wrapperCol={{
+            offset: 8,
+            span: 16,
+          }}
+        >
+          <Button type="primary" htmlType="submit">
+            Login
+          </Button>
+        </Form.Item>
+      </Form>
+    </>
+  );
+};
 export default LoginPage;
 
 // type FormDataType = {
