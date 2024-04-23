@@ -1,5 +1,6 @@
+import axios from 'axios';
 import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
-import { Button, Checkbox, Form, Input, InputNumber, Space, Table } from "antd";
+import {message, Button, Checkbox, Form, Input, InputNumber, Space, Table } from "antd";
 import React from "react";
 import NavBar from "../components/NavBar";
 import passwordListColumnConfig from "../passwordListColumnConfig";
@@ -29,9 +30,31 @@ const data = [
 
 const PasswordManagerPage = () => {
   const [form] = Form.useForm();
-  const onFinish = (values) => {
-    console.log("Success:", values);
-  };
+  const onFinish = async (values) => {
+    const token = sessionStorage.getItem('access_token');
+    console.log("Token sent in request:", token); // Check if the token looks correct
+    if (!token) {
+        message.error('You must be logged in to save a password.');
+        return;
+    }
+    try {
+        const response = await axios.post("/api/passwords/", {
+            service: values.service,
+            password: values.password,
+        }, {
+            headers: {
+                'Authorization': `Bearer ${token}` // Ensure this format is correct
+            }
+        });
+        console.log("Server response:", response.data);
+        message.success('Password saved successfully');
+    } catch (error) {
+        console.error("Failed to create password:", error.response);
+        message.error('Failed to save the password: ' + (error.response.data.message || 'Unknown Error'));
+    }
+};
+
+
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
   };

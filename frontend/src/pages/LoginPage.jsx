@@ -26,7 +26,7 @@ const LoginPage = () => {
 
   async function handleLogin() {
     try {
-      const res = await axios.post("/login", {
+      const res = await axios.post("/api/auth/login", {
         username: usernameInput,
         password: passwordInput,
       });
@@ -43,28 +43,6 @@ const LoginPage = () => {
         error.response.data
       );
     }
-  }
-  function handleLogin2() {
-    axios
-      .post("/login", {
-        username: usernameInput,
-        password: passwordInput,
-      })
-      .then((res) => {
-        const { access_token } = res.data;
-        sessionStorage.setItem("access_token", access_token);
-        // Assuming the server responds with a success message
-        messageApi.success("Login successful");
-        // Redirect to dashboard or home page
-        navigate("/password-manager"); // Adjust the route as per your application
-      })
-      .catch((error) => {
-        // Handle errors such as incorrect credentials
-        messageApi.error(
-          "Login failed. Please check your credentials.",
-          error.response.data
-        );
-      });
   }
 
   return (

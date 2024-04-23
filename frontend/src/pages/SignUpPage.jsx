@@ -28,22 +28,20 @@ const SignUpPage = () => {
 
   async function handleSignup() {
     try {
-      const res = await axios.post("/signup", {
+      const res = await axios.post("/api/auth/register", {
         username: usernameInput,
         password: passwordInput,
       });
-      // Assuming the server responds with a success message
       messageApi.success("Signup successful");
-      // Redirect to dashboard or home page
       navigate("/login"); // Adjust the route as per your application
     } catch (error) {
-      // Handle errors such as incorrect credentials
       messageApi.error(
-        "Login failed. Please check your credentials.",
-        error.response.data
+        "Signup failed. Please check your details.",
+        error.response.data.message
       );
     }
-  }
+}
+
   return (
     <>
       <NavBar />
@@ -64,7 +62,7 @@ const SignUpPage = () => {
         initialValues={{
           remember: true,
         }}
-        onFinish={onFinish}
+        // onFinish={onFinish}
         onFinishFailed={onFinishFailed}
         autoComplete="off"
       >
