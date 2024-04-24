@@ -1,8 +1,10 @@
 const PasswordModel = require("../models/password.model");
+const UserModel = require("../models/user.model");
 
 exports.getAllPasswords = async (req, res) => {
   try {
-    const passwords = await PasswordModel.find({ user: req.user._id });
+    const { username, password } = req.body;
+    const passwords = await PasswordModel.find({ username });
     res.json(passwords);
   } catch (error) {
     res
@@ -14,6 +16,13 @@ exports.getAllPasswords = async (req, res) => {
 exports.createPassword = async (req, res) => {
   try {
     const { service, password } = req.body;
+    const existingService = await PasswordModel.findOne({ service });
+    if (existingService) {
+      res
+        .status(400)
+        .json({ message: "This service already has a password saved." });
+      return;
+    }
     const newPassword = await PasswordModel.create({ service, password });
     res.status(201).json(newPassword);
   } catch (error) {

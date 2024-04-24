@@ -9,7 +9,7 @@ import {
   Table,
   message,
 } from "antd";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import NavBar from "../components/NavBar";
 import passwordListColumnConfig from "../passwordListColumnConfig";
 import { axiosInstance } from "../util";
@@ -33,6 +33,32 @@ let passwordData;
 
 const PasswordManagerPage = () => {
   const [form] = Form.useForm();
+  const [passwordsData, setPasswordsData] = useState(null);
+  const [fetchingPasswords, setFetchingPasswords] = useState(false);
+  useEffect(() => {
+    async function fetchInitialPasswords() {
+      const token = sessionStorage.getItem("access_token");
+      if (!token) {
+        return;
+      }
+      try {
+        // Fetch passwords when the component first loads
+        const fetchResponse = await axiosInstance.get("/api/passwords", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        console.log("Fetched passwords:", fetchResponse.data);
+        setPasswordsData(fetchResponse.data); // Set the passwords data in state
+        setFetchingPasswords(true);
+      } catch (error) {
+        console.error("Failed to fetch passwords:", error);
+      }
+    }
+
+    fetchInitialPasswords();
+  }, []);
+
   const onFinish = async (values) => {
     const token = sessionStorage.getItem("access_token");
     console.log("Token sent in request:", token); // Check if the token looks correct
@@ -55,6 +81,12 @@ const PasswordManagerPage = () => {
       );
       console.log("Server response:", response.data);
       message.success("Password saved successfully");
+      const fetchResponse = await axiosInstance.get("/api/passwords", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setPasswordsData(fetchResponse.data);
     } catch (error) {
       console.error("Failed to create password:", error.response);
       message.error(
@@ -156,7 +188,7 @@ const PasswordManagerPage = () => {
         <Table
           style={{ margin: 20, marginTop: 60 }}
           columns={passwordListColumnConfig}
-          dataSource={passwordData}
+          dataSource={passwordsData}
         />
       </div>
     </>
