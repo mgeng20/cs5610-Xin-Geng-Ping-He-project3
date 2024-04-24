@@ -29,13 +29,7 @@ const tailLayout = {
   },
 };
 
-const data = [
-  {
-    service: "youtube",
-    password: "123456",
-    lastUpdated: new Date().toLocaleDateString(),
-  },
-];
+let passwordData;
 
 const PasswordManagerPage = () => {
   const [form] = Form.useForm();
@@ -162,7 +156,7 @@ const PasswordManagerPage = () => {
         <Table
           style={{ margin: 20, marginTop: 60 }}
           columns={passwordListColumnConfig}
-          dataSource={data}
+          dataSource={passwordData}
         />
       </div>
     </>
