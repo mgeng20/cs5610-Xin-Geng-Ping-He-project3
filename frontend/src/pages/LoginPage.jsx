@@ -1,8 +1,8 @@
 import { Button, Form, Input, message } from "antd";
-import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
+import { axiosInstance } from "../util";
 
 const onFinishFailed = (errorInfo) => {
   console.log("Failed:", errorInfo);
@@ -26,7 +26,7 @@ const LoginPage = () => {
 
   async function handleLogin() {
     try {
-      const res = await axios.post("/api/auth/login", {
+      const res = await axiosInstance.post("/api/auth/login", {
         username: usernameInput,
         password: passwordInput,
       });

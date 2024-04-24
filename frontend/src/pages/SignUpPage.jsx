@@ -1,8 +1,8 @@
 import { Button, Form, Input, message } from "antd";
-import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
+import { axiosInstance } from "../util";
 
 // const onFinish = (values) => {
 //   console.log("Success:", values);
@@ -28,7 +28,7 @@ const SignUpPage = () => {
 
   async function handleSignup() {
     try {
-      const res = await axios.post("/api/auth/register", {
+      const res = await axiosInstance.post("/api/auth/register", {
         username: usernameInput,
         password: passwordInput,
       });
@@ -40,7 +40,7 @@ const SignUpPage = () => {
         error.response.data.message
       );
     }
-}
+  }
 
   return (
     <>
