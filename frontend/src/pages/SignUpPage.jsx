@@ -1,6 +1,6 @@
 import { Button, Form, Input, message } from "antd";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import { axiosInstance } from "../util";
 
@@ -32,19 +32,20 @@ const SignUpPage = () => {
         username: usernameInput,
         password: passwordInput,
       });
-      messageApi.success("Signup successful");
-      navigate("/login"); // Adjust the route as per your application
+      messageApi.success("Signup successful.");
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
+      // Adjust the route as per your application
     } catch (error) {
-      messageApi.error(
-        "Signup failed. Please check your details.",
-        error.response.data.message
-      );
+      messageApi.error(error.response.data.message);
     }
   }
 
   return (
     <>
       <NavBar />
+      {messageHolder}
 
       <Form
         name="basic"
@@ -66,6 +67,7 @@ const SignUpPage = () => {
         onFinishFailed={onFinishFailed}
         autoComplete="off"
       >
+        <h1>Sign up</h1>
         <Form.Item
           label="Username"
           name="username"
@@ -102,6 +104,9 @@ const SignUpPage = () => {
             Signup
           </Button>
         </Form.Item>
+        <p>
+          Already have an account? <Link to="/login">Log in</Link>
+        </p>
       </Form>
     </>
 
