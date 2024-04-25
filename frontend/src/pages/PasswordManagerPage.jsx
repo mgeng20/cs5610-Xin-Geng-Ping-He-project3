@@ -37,17 +37,9 @@ const PasswordManagerPage = () => {
   const [fetchingPasswords, setFetchingPasswords] = useState(false);
   useEffect(() => {
     async function fetchInitialPasswords() {
-      const token = sessionStorage.getItem("access_token");
-      if (!token) {
-        return;
-      }
       try {
         // Fetch passwords when the component first loads
-        const fetchResponse = await axiosInstance.get("/api/passwords", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const fetchResponse = await axiosInstance.get("/api/passwords");
         console.log("Fetched passwords:", fetchResponse.data);
         setPasswordsData(fetchResponse.data); // Set the passwords data in state
         setFetchingPasswords(true);
@@ -60,32 +52,14 @@ const PasswordManagerPage = () => {
   }, []);
 
   const onFinish = async (values) => {
-    const token = sessionStorage.getItem("access_token");
-    console.log("Token sent in request:", token); // Check if the token looks correct
-    if (!token) {
-      message.error("You must be logged in to save a password.");
-      return;
-    }
     try {
-      const response = await axiosInstance.post(
-        "/api/passwords/",
-        {
-          service: values.service,
-          password: values.password,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // Ensure this format is correct
-          },
-        }
-      );
+      const response = await axiosInstance.post("/api/passwords/", {
+        service: values.service,
+        password: values.password,
+      });
       console.log("Server response:", response.data);
       message.success("Password saved successfully");
-      const fetchResponse = await axiosInstance.get("/api/passwords", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const fetchResponse = await axiosInstance.get("/api/passwords");
       setPasswordsData(fetchResponse.data);
     } catch (error) {
       console.error("Failed to create password:", error.response);
