@@ -32,10 +32,10 @@ exports.login = async (req, res) => {
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: "Invalid username or password" });
     }
-    const token = jwt.sign({ userId: user._id }, jwtSecret, {
+    const access_token = jwt.sign({ userId: user._id }, jwtSecret, {
       expiresIn: "1h",
     });
-    res.json({ message: "Login successful", token });
+    res.json({ message: "Login successful", access_token });
   } catch (error) {
     res.status(500).json({ message: "Error logging in", error: error.message });
   }

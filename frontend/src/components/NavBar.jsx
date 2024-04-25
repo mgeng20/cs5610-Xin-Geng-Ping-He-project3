@@ -1,14 +1,9 @@
 import { Layout, Menu, theme } from "antd";
-import React from "react";
+import _ from "lodash";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const { Header } = Layout;
-
-const menuItems = [
-  { label: "Home", key: "/" },
-  { label: "Login", key: "/login" },
-  { label: "Signup", key: "/signup" },
-];
 
 export default () => {
   const navigate = useNavigate();
@@ -16,6 +11,16 @@ export default () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+
+  const [username, setUsername] = useState(sessionStorage.getItem("username"));
+  const isLoggedIn = sessionStorage.getItem("access_token") !== null;
+  const menuItems = _.compact([
+    { label: "Home", key: "/" },
+    !isLoggedIn && { label: "Login", key: "/login" },
+    !isLoggedIn && { label: "Signup", key: "/signup" },
+    isLoggedIn && { label: username, key: "/logout" },
+  ]);
+
   return (
     <Layout>
       <div className="demo-logo" />

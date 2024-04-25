@@ -3,8 +3,8 @@ const router = express.Router();
 const passwordController = require("../controllers/password.controller");
 const { verifyToken } = require("../middleware/authMiddleware");
 
-router.get("/", passwordController.getAllPasswords);
-router.post("/", passwordController.createPassword);
+router.get("/", verifyToken, passwordController.getAllPasswords);
+router.post("/", verifyToken, passwordController.createPassword);
 router.put("/:id", passwordController.updatePassword);
 router.delete("/:id", passwordController.deletePassword);
 router.post("/share", passwordController.sharePassword);
