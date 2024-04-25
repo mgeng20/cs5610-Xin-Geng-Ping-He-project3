@@ -1,25 +1,15 @@
-import { Layout, Menu, theme } from "antd";
-import React, { useState } from "react";
+import { Layout, Menu } from "antd";
+import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import UsernameMenuItem from "./UsernameMenuItem";
-
-const { Header } = Layout;
 
 export default () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
 
-  const [username, setUsername] = useState(sessionStorage.getItem("username"));
   const isLoggedIn = sessionStorage.getItem("access_token") !== null;
-  // const menuItems = _.compact([
-  //   { label: "Home", key: "/" },
-  //   !isLoggedIn && { label: "Login", key: "/login" },
-  //   !isLoggedIn && { label: "Signup", key: "/signup" },
-  //   isLoggedIn && { label: username, key: "/logout" },
-  // ]);
+
+  const { pathname } = location;
 
   return (
     <Layout>
@@ -27,15 +17,16 @@ export default () => {
       <Menu
         theme="dark"
         mode="horizontal"
-        selectedKeys={[location.pathname]}
+        selectedKeys={[pathname]}
         style={{
           flex: 2,
           minWidth: 0,
         }}
       >
-        <Link to="/">
-          <Menu.Item>Home</Menu.Item>
-        </Link>
+        <Menu.Item key="/">
+          <Link to="/">Home </Link>
+        </Menu.Item>
+
         <div style={{ flex: 1 }}></div>
         {isLoggedIn ? (
           <>
@@ -51,12 +42,13 @@ export default () => {
           </>
         ) : (
           <>
-            <Link to="/login">
-              <Menu.Item>Login</Menu.Item>
-            </Link>
-            <Link to="/signup">
-              <Menu.Item>Signup</Menu.Item>
-            </Link>
+            <Menu.Item key="/login">
+              <Link to="/login">Login</Link>
+            </Menu.Item>
+
+            <Menu.Item key="/signup">
+              <Link to="/signup">Signup</Link>
+            </Menu.Item>
           </>
         )}
       </Menu>
