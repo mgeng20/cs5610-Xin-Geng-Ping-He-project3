@@ -1,6 +1,7 @@
-import { Space } from "antd";
+import { Space, message } from "antd";
 import dayjs from "dayjs";
 import React from "react";
+import { axiosInstance, clearPasswordListCache } from "./util";
 
 const passwordListColumnConfig = [
   {
@@ -30,7 +31,16 @@ const passwordListColumnConfig = [
     render: (_, record) => (
       <Space size="middle">
         <a>Update</a>
-        <a>Delete</a>
+        <a
+          onClick={() => {
+            axiosInstance.delete("/api/passwords/" + record["_id"]).then(() => {
+              message.success("Password deleted");
+              clearPasswordListCache();
+            });
+          }}
+        >
+          Delete
+        </a>
         <a>Share</a>
       </Space>
     ),
