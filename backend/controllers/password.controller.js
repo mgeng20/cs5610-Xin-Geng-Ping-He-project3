@@ -1,10 +1,16 @@
 const PasswordModel = require("../models/password.model");
-const UserModel = require("../models/user.model");
 
 exports.getAllPasswords = async (req, res) => {
   const { userId } = req.user;
+  const { keyword } = req.body;
   try {
-    const passwords = await PasswordModel.find({ user: userId });
+    const query = { user: userId };
+    if (keyword) {
+      query["service"] = {
+        $regex: keyword,
+      };
+    }
+    const passwords = await PasswordModel.find(query);
     res.json(passwords);
   } catch (error) {
     res
