@@ -2,7 +2,7 @@ const PasswordModel = require("../models/password.model");
 
 exports.getAllPasswords = async (req, res) => {
   const { userId } = req.user;
-  const { keyword } = req.body;
+  const { keyword } = req.query;
   try {
     const query = { user: userId };
     if (keyword) {

@@ -5,16 +5,17 @@ import {
   Form,
   Input,
   InputNumber,
+  Row,
   Space,
   Table,
   message,
 } from "antd";
-import React from "react";
+import React, { useState } from "react";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import NavBar from "../components/NavBar";
 import passwordListColumnConfig from "../passwordListColumnConfig";
-import { axiosInstance } from "../util";
+import { axiosInstance, clearPasswordListCache } from "../util";
 
 const layout = {
   labelCol: {
@@ -34,7 +35,10 @@ const tailLayout = {
 const CreateNewPassword = () => {
   const { trigger, isMutating } = useSWRMutation(
     ["password-list"],
-    (key, { arg }) => axiosInstance.post("/api/passwords/", arg)
+    (key, { arg }) => axiosInstance.post("/api/passwords/", arg),
+    {
+      onSuccess: clearPasswordListCache,
+    }
   );
 
   const onFinish = (values) => {
@@ -78,16 +82,7 @@ const CreateNewPassword = () => {
         <Input placeholder="Enter service name or website url" />
       </Form.Item>
 
-      <Form.Item
-        label="Password"
-        name="password"
-        rules={[
-          {
-            required: true,
-            message: "Please input your password.",
-          },
-        ]}
-      >
+      <Form.Item label="Password" name="password">
         <Input.Password
           placeholder="Enter your password or system will generate one"
           iconRender={(visible) =>
@@ -133,16 +128,29 @@ const CreateNewPassword = () => {
 };
 
 const PasswordTable = () => {
-  const { data, isLoading } = useSWR(["password-list"], () =>
-    axiosInstance.get("/api/passwords").then((res) => res.data)
+  const [keyword, setKeyword] = useState("");
+  const { data, isLoading } = useSWR(["password-list", keyword], () =>
+    axiosInstance
+      .get("/api/passwords?keyword=" + keyword)
+      .then((res) => res.data)
   );
   return (
-    <Table
-      isLoading={isLoading}
-      style={{ margin: 20, marginTop: 60 }}
-      columns={passwordListColumnConfig}
-      dataSource={data}
-    />
+    <>
+      <Row>
+        <p>Search: &nbsp;</p>
+        <Input
+          style={{ width: 600 }}
+          onChange={(e) => setKeyword(e.target.value)}
+        />
+      </Row>
+
+      <Table
+        isLoading={isLoading}
+        style={{ margin: 20, marginTop: 60 }}
+        columns={passwordListColumnConfig}
+        dataSource={data}
+      />
+    </>
   );
 };
 
