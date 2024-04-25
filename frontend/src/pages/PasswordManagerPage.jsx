@@ -1,4 +1,8 @@
-import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
+import {
+  EyeInvisibleOutlined,
+  EyeTwoTone,
+  SearchOutlined,
+} from "@ant-design/icons";
 import {
   Button,
   Checkbox,
@@ -136,17 +140,18 @@ const PasswordTable = () => {
   );
   return (
     <>
-      <Row>
-        <p>Search: &nbsp;</p>
+      <Row style={{ paddingLeft: 20 }}>
         <Input
-          style={{ width: 600 }}
+          addonBefore={<SearchOutlined />}
+          placeholder="Search the service or URL here"
+          style={{ width: 400 }}
           onChange={(e) => setKeyword(e.target.value)}
         />
       </Row>
 
       <Table
         isLoading={isLoading}
-        style={{ margin: 20, marginTop: 60 }}
+        style={{ margin: 20, marginTop: 20 }}
         columns={passwordListColumnConfig}
         dataSource={data}
       />
