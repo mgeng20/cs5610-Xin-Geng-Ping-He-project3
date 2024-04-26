@@ -18,6 +18,21 @@ const PasswordSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'UserModel'
     }],
+    shareRequests: [{
+    sender: {
+      type: Schema.Types.ObjectId,
+      ref: 'UserModel'
+    },
+    recipient: {
+      type: Schema.Types.ObjectId,
+      ref: 'UserModel'
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'accepted', 'rejected'],
+      default: 'pending'
+    }
+  }],
     lastUpdated: {
         type: Date,
         default: Date.now

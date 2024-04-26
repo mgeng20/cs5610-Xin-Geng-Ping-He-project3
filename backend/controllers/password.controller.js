@@ -134,20 +134,50 @@ exports.deletePassword = async (req, res) => {
 exports.sharePassword = async (req, res) => {
   try {
     const { sharedWith, passwordId } = req.body;
+    const { userId } = req.user;
+
+    const recipient = await UserModel.findOne({ username: sharedWith });
+    if (!recipient) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (recipient._id.toString() === userId) {
+      return res.status(400).json({ message: "Cannot share with yourself" });
+    }
+
     const password = await PasswordModel.findById(passwordId);
     if (!password) {
       return res.status(404).json({ message: "Password not found" });
     }
-    password.sharedWith = sharedWith;
+
+    // 检查是否已经发送过共享请求
+    if (password.shareRequests.some(request => request.recipient.toString() === recipient._id.toString())) {
+      return res.status(400).json({ message: "Share request already sent to this user" });
+    }
+
+    password.shareRequests.push({
+      sender: userId,
+      recipient: recipient._id
+    });
+
     await password.save();
-    res.json({ message: "Password shared successfully" });
+
+    res.json({ message: "Password share request sent successfully" });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error sharing password", error: error.message });
+    res.status(500).json({ message: "Error sending password share request", error: error.message });
   }
 };
-
+exports.getShareRequests = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const shareRequests = await PasswordModel.find({ 'shareRequests.recipient': userId })
+      .populate('shareRequests.sender', 'username')
+      .select('shareRequests');
+    res.json(shareRequests);
+  } catch (error) {
+    res.status(500).json({ message: "Error retrieving share requests", error: error.message });
+  }
+};
 exports.sharePassword = async (req, res) => {
   try {
     const { sharedWith, passwordId } = req.body;
@@ -200,7 +230,9 @@ exports.sharePassword = async (req, res) => {
 exports.getSharedPasswords = async (req, res) => {
   try {
     const { userId } = req.user;
-    const sharedPasswords = await PasswordModel.find({ sharedWith: userId });
+    const sharedPasswords = await PasswordModel.find({ sharedWith: userId })
+      .populate("user", "username")
+      .exec();
     res.json(sharedPasswords);
   } catch (error) {
     res.status(500).json({ message: "Error retrieving shared passwords", error: error.message });
@@ -209,27 +241,71 @@ exports.getSharedPasswords = async (req, res) => {
 
 exports.updateShareRequest = async (req, res) => {
   try {
-    const { shareRequestId } = req.params;
+    const { passwordId, requestId } = req.params;
     const { accepted } = req.body;
     const { userId } = req.user;
 
-    const password = await PasswordModel.findById(shareRequestId);
+    const password = await PasswordModel.findById(passwordId);
     if (!password) {
       return res.status(404).json({ message: "Password not found" });
     }
 
-    if (!password.sharedWith.includes(userId)) {
-      return res.status(400).json({ message: "You are not allowed to update this share request" });
+    const shareRequest = password.shareRequests.id(requestId);
+    if (!shareRequest) {
+      return res.status(404).json({ message: "Share request not found" });
+    }
+
+    if (shareRequest.recipient.toString() !== userId) {
+      return res.status(403).json({ message: "Not authorized to update this share request" });
     }
 
     if (accepted) {
-      res.json({ message: "Share request accepted" });
+      shareRequest.status = 'accepted';
     } else {
-      password.sharedWith = password.sharedWith.filter((id) => id.toString() !== userId);
-      await password.save();
-      res.json({ message: "Share request rejected" });
+      shareRequest.status = 'rejected';
     }
+
+    await password.save();
+
+    res.json({ message: "Share request updated successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error updating share request", error: error.message });
+  }
+};
+
+exports.getReceivedShareRequests = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const receivedShareRequests = await PasswordModel.aggregate([
+      { $match: { 'shareRequests.recipient': mongoose.Types.ObjectId(userId) } },
+      { $unwind: '$shareRequests' },
+      { $match: { 'shareRequests.recipient': mongoose.Types.ObjectId(userId) } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'shareRequests.sender',
+          foreignField: '_id',
+          as: 'shareRequests.sender'
+        }
+      },
+      { $unwind: '$shareRequests.sender' },
+      {
+        $project: {
+          _id: '$shareRequests._id',
+          password: {
+            _id: '$_id',
+            service: '$service'
+          },
+          sender: {
+            _id: '$shareRequests.sender._id',
+            username: '$shareRequests.sender.username'
+          },
+          status: '$shareRequests.status'
+        }
+      }
+    ]);
+    res.json(receivedShareRequests);
+  } catch (error) {
+    res.status(500).json({ message: "Error retrieving received share requests", error: error.message });
   }
 };
