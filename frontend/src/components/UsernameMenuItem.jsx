@@ -7,6 +7,7 @@ export default () => {
   const [user, setUser] = useState();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [requestList, setRequestList] = useState([]);
+  const [sharedPasswordList, setSharedPasswordList] = useState([]);
 
   const requestListSWR = useSWR(["request-list"], () =>
     axiosInstance.get("/api/passwords/share-requests").then((res) => res.data)
@@ -14,14 +15,13 @@ export default () => {
 
   const showDrawer = () => {
     setDrawerOpen(true);
+    console.log(requestListSWR.data);
 
     const lst = Object.values(requestListSWR.data).map((item) => [
-      item.user.username,
-      item.service,
+      item.sender.username,
+      item.password.service,
     ]);
     setRequestList(lst);
-    console.log(requestListSWR.data);
-    console.log(requestList);
   };
   const onClose = () => {
     setDrawerOpen(false);
@@ -37,7 +37,12 @@ export default () => {
         console.log(e);
       });
   }, []);
-  // get message list
+
+  const handleResponse = (action, request) => {
+    if (action === "accept") {
+    }
+    requestList.remove(request);
+  };
   return (
     <>
       <Space>
@@ -48,7 +53,7 @@ export default () => {
           <Descriptions column={1}>
             {requestList.map((item, index) => (
               <React.Fragment>
-                <Descriptions.Item label="User">{item[0]}</Descriptions.Item>
+                <Descriptions.Item label="Sender">{item[0]}</Descriptions.Item>
                 <Descriptions.Item label="Service">{item[1]}</Descriptions.Item>
                 <Descriptions.Item>
                   <Row style={{ gap: 10 }}>

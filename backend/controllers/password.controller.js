@@ -1,5 +1,6 @@
 const PasswordModel = require("../models/password.model");
 const UserModel = require("../models/user.model");
+const ShareRequestModel = require("../models/shareRequest.model");
 const crypto = require("crypto");
 
 exports.getAllPasswords = async (req, res) => {
@@ -61,7 +62,10 @@ function generatePassword(length, useAlphabet, useNumerals, useSymbols) {
   }
 
   if (useAlphabet) {
-    password += getRandomChar(crypto, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    password += getRandomChar(
+      crypto,
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    );
   }
   if (useNumerals) {
     password += getRandomChar(crypto, "0123456789");
@@ -101,13 +105,22 @@ exports.generatePassword = async (req, res) => {
     const { userId } = req.user;
 
     if (!alphabet && !numerals && !symbols) {
-      return res.status(400).json({ message: "At least one character set must be selected" });
+      return res
+        .status(400)
+        .json({ message: "At least one character set must be selected" });
     }
     if (length < 4 || length > 50) {
-      return res.status(400).json({ message: "Password length must be between 4 and 50" });
+      return res
+        .status(400)
+        .json({ message: "Password length must be between 4 and 50" });
     }
 
-    const generatedPassword = generatePassword(length, alphabet, numerals, symbols);
+    const generatedPassword = generatePassword(
+      length,
+      alphabet,
+      numerals,
+      symbols
+    );
 
     const newPassword = await PasswordModel.create({
       service,
@@ -118,7 +131,9 @@ exports.generatePassword = async (req, res) => {
 
     res.status(201).json(newPassword);
   } catch (error) {
-    res.status(500).json({ message: "Error generating password", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error generating password", error: error.message });
   }
 };
 
@@ -169,23 +184,33 @@ exports.sharePassword = async (req, res) => {
       return res.status(404).json({ message: "Password not found" });
     }
 
-    if (
-      password.shareRequests.some(
-        (request) => request.recipient.toString() === recipient._id.toString()
-      )
-    ) {
+    const record = await ShareRequestModel.findOne({
+      sender: userId,
+      password: password,
+      recipient: recipient,
+    });
+    if (record) {
+      // password.shareRequests.some(
+      //   (request) => request.recipient.toString() === recipient._id.toString()
+      // )
       return res
         .status(400)
         .json({ message: "Share request already sent to this user" });
     }
 
-    password.shareRequests.push({
+    // password.shareRequests.push({
+    //   sender: userId,
+    //   recipient: recipient._id,
+    // });
+
+    // await password.save();
+
+    const newShareRequest = await ShareRequestModel.create({
       sender: userId,
-      recipient: recipient._id,
+      recipient,
+      password,
     });
-
-    await password.save();
-
+    res.status(201).json(newShareRequest);
     res.json({ message: "Password share request sent successfully" });
   } catch (error) {
     res.status(500).json({
@@ -197,9 +222,11 @@ exports.sharePassword = async (req, res) => {
 exports.getShareRequests = async (req, res) => {
   try {
     const { userId } = req.user;
-    const shareRequests = await PasswordModel.find({
-      sharedWith: userId,
-    }).populate("user");
+    const shareRequests = await ShareRequestModel.find({
+      recipient: userId,
+    })
+      .populate("sender")
+      .populate("password");
     // .select("user.username", "service");
     res.json(shareRequests);
   } catch (error) {
@@ -210,58 +237,58 @@ exports.getShareRequests = async (req, res) => {
   }
 };
 
-exports.sharePassword = async (req, res) => {
-  try {
-    const { sharedWith, passwordId } = req.body;
-    const password = await PasswordModel.findById(passwordId);
-    if (!password) {
-      return res.status(404).json({ message: "Password not found" });
-    }
-    password.sharedWith = sharedWith;
-    await password.save();
-    res.json({ message: "Password shared successfully" });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error sharing password", error: error.message });
-  }
-};
+// exports.sharePassword = async (req, res) => {
+//   try {
+//     const { sharedWith, passwordId } = req.body;
+//     const password = await PasswordModel.findById(passwordId);
+//     if (!password) {
+//       return res.status(404).json({ message: "Password not found" });
+//     }
+//     password.sharedWith = sharedWith;
+//     await password.save();
+//     res.json({ message: "Password shared successfully" });
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: "Error sharing password", error: error.message });
+//   }
+// };
 
-exports.sharePassword = async (req, res) => {
-  try {
-    const { sharedWith, passwordId } = req.body;
-    const { userId } = req.user;
+// exports.sharePassword = async (req, res) => {
+//   try {
+//     const { sharedWith, passwordId } = req.body;
+//     const { userId } = req.user;
 
-    const receiver = await UserModel.findOne({ username: sharedWith });
-    if (!receiver) {
-      return res.status(404).json({ message: "User not found" });
-    }
+//     const receiver = await UserModel.findOne({ username: sharedWith });
+//     if (!receiver) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
 
-    if (receiver._id.toString() === userId) {
-      return res.status(400).json({ message: "Cannot share with yourself" });
-    }
+//     if (receiver._id.toString() === userId) {
+//       return res.status(400).json({ message: "Cannot share with yourself" });
+//     }
 
-    const password = await PasswordModel.findById(passwordId);
-    if (!password) {
-      return res.status(404).json({ message: "Password not found" });
-    }
+//     const password = await PasswordModel.findById(passwordId);
+//     if (!password) {
+//       return res.status(404).json({ message: "Password not found" });
+//     }
 
-    if (password.sharedWith.includes(receiver._id)) {
-      return res
-        .status(400)
-        .json({ message: "Password already shared with this user" });
-    }
+//     if (password.sharedWith.includes(receiver._id)) {
+//       return res
+//         .status(400)
+//         .json({ message: "Password already shared with this user" });
+//     }
 
-    password.sharedWith.push(receiver._id);
-    await password.save();
+//     password.sharedWith.push(receiver._id);
+//     await password.save();
 
-    res.json({ message: "Password shared successfully" });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error sharing password", error: error.message });
-  }
-};
+//     res.json({ message: "Password shared successfully" });
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: "Error sharing password", error: error.message });
+//   }
+// };
 
 exports.getSharedPasswords = async (req, res) => {
   try {
