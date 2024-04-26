@@ -9,6 +9,7 @@ import {
   Form,
   Input,
   InputNumber,
+  Modal,
   Row,
   Space,
   Table,
@@ -18,7 +19,7 @@ import React, { useState } from "react";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import NavBar from "../components/NavBar";
-import passwordListColumnConfig from "../passwordListColumnConfig";
+import { generateColumnConfig } from "../passwordListColumnConfig";
 import { axiosInstance, clearPasswordListCache } from "../util";
 
 const layout = {
@@ -133,11 +134,50 @@ const CreateNewPassword = () => {
 
 const PasswordTable = () => {
   const [keyword, setKeyword] = useState("");
+  const [newPasswordInput, setNewPasswordInput] = useState();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [updatingRecord, setUpdatingRecord] = useState();
+
   const { data, isLoading } = useSWR(["password-list", keyword], () =>
     axiosInstance
       .get("/api/passwords?keyword=" + keyword)
       .then((res) => res.data)
   );
+
+  function setNewPassword(event) {
+    const newPassword = event.target.value;
+    setNewPasswordInput(newPassword);
+  }
+
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+  const handleOk = () => {
+    axiosInstance
+      .put("/api/passwords/" + updatingRecord["_id"], {
+        password: newPasswordInput,
+      })
+      .then(() => {
+        message.success("Password updated");
+        setIsModalOpen(false);
+        clearPasswordListCache();
+      });
+  };
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
+  const onClickUpdate = (record) => {
+    showModal();
+    setUpdatingRecord(record);
+  };
+  const onClickDelete = (record) => {
+    axiosInstance.delete("/api/passwords/" + record["_id"]).then(() => {
+      message.success("Password deleted");
+      clearPasswordListCache();
+    });
+  };
+  const onClickShare = (record) => {};
   return (
     <>
       <Row style={{ paddingLeft: 20 }}>
@@ -152,9 +192,25 @@ const PasswordTable = () => {
       <Table
         isLoading={isLoading}
         style={{ margin: 20, marginTop: 20 }}
-        columns={passwordListColumnConfig}
+        columns={generateColumnConfig(
+          onClickUpdate,
+          onClickDelete,
+          onClickShare
+        )}
         dataSource={data}
       />
+      <Modal
+        title="Update password"
+        open={isModalOpen}
+        onOk={handleOk}
+        okText={"Submit"}
+        onCancel={handleCancel}
+      >
+        <Input
+          placeholder="Enter the new password here"
+          onChange={(e) => setNewPasswordInput(e.target.value)}
+        ></Input>
+      </Modal>
     </>
   );
 };
