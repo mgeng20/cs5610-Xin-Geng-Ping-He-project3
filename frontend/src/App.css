@@ -28,6 +28,20 @@
   color: #61dafb;
 }
 
+.homepage-container {
+  height: calc(100vh - 46px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.description {
+  display: flex;
+
+}
+
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

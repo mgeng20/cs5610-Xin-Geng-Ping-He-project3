@@ -21,6 +21,7 @@ export default () => {
         style={{
           flex: 2,
           minWidth: 0,
+          fontSize: 18,
         }}
       >
         <Menu.Item key="/">

@@ -94,17 +94,24 @@ const LoginPage = () => {
 
         <Form.Item
           wrapperCol={{
-            offset: 8,
+            offset: 6,
             span: 16,
           }}
         >
-          <Button type="primary" htmlType="submit" onClick={handleLogin}>
+          <Button
+            style={{
+              width: "100%",
+            }}
+            type="primary"
+            htmlType="submit"
+            onClick={handleLogin}
+          >
             Login
           </Button>
+          <p>
+            Don't have an account? <Link to="/signup">Sign up</Link>
+          </p>
         </Form.Item>
-        <p>
-          Don't have an account? <Link to="/signup">Sign up</Link>
-        </p>
       </Form>
     </>
   );
