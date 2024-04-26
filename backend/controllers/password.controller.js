@@ -60,7 +60,6 @@ function generatePassword(length, useAlphabet, useNumerals, useSymbols) {
     charset += "!@#$%^&*()_+~`|}{[]:;?><,./-=";
   }
 
-  // 确保每个选中的字符集都至少出现一次
   if (useAlphabet) {
     password += getRandomChar(crypto, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
   }
@@ -170,7 +169,6 @@ exports.sharePassword = async (req, res) => {
       return res.status(404).json({ message: "Password not found" });
     }
 
-    // 检查是否已经发送过共享请求
     if (
       password.shareRequests.some(
         (request) => request.recipient.toString() === recipient._id.toString()
@@ -211,6 +209,7 @@ exports.getShareRequests = async (req, res) => {
     });
   }
 };
+
 exports.sharePassword = async (req, res) => {
   try {
     const { sharedWith, passwordId } = req.body;
