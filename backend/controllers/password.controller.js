@@ -192,9 +192,8 @@ exports.getShareRequests = async (req, res) => {
     const { userId } = req.user;
     const shareRequests = await PasswordModel.find({
       sharedWith: userId,
-    });
-    // .populate("shareRequests.sender", "username")
-    // .select("shareRequests");
+    }).populate("user");
+    // .select("user.username", "service");
     res.json(shareRequests);
   } catch (error) {
     res.status(500).json({
