@@ -1,6 +1,7 @@
 import { Space } from "antd";
 import dayjs from "dayjs";
 import React from "react";
+import PasswordCell from "./components/PasswordCell";
 
 export function generateColumnConfig(
   onClickUpdate,
@@ -18,6 +19,9 @@ export function generateColumnConfig(
       title: "Password",
       dataIndex: "password",
       key: "password",
+      render(value) {
+        return <PasswordCell password={value} />;
+      },
     },
     {
       title: "Last Updated",
