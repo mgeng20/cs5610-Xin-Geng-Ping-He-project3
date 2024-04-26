@@ -15,12 +15,13 @@ import {
   Table,
   message,
 } from "antd";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import NavBar from "../components/NavBar";
 import { generateColumnConfig } from "../passwordListColumnConfig";
 import { axiosInstance, clearPasswordListCache } from "../util";
+import SharedPasswordList from "../SharedPasswordList";
 
 const layout = {
   labelCol: {
@@ -47,14 +48,45 @@ const CreateNewPassword = () => {
   );
 
   const onFinish = (values) => {
-    trigger(values)
-      .then(() => message.success("Password saved successfully"))
-      .catch((error) =>
-        message.error(
-          "Failed to save the password: " +
-            (error.response.data.message || "Unknown Error")
-        )
-      );
+    const { service, password, alphabet, numerals, symbols, length } = values;
+  
+    if (!password) {
+      if (!alphabet && !numerals && !symbols) {
+        message.error("At least one character set must be selected");
+        return;
+      }
+      if (length < 4 || length > 50) {
+        message.error("Password length must be between 4 and 50");
+        return;
+      }
+      axiosInstance
+        .post("/api/passwords/generate", {
+          service,
+          alphabet,
+          numerals,
+          symbols,
+          length,
+        })
+        .then((res) => {
+          message.success("Password saved successfully");
+          clearPasswordListCache();
+        })
+        .catch((error) =>
+          message.error(
+            "Failed to save the password: " +
+              (error.response.data.message || "Unknown Error")
+          )
+        );
+    } else {
+      trigger({ service, password })
+        .then(() => message.success("Password saved successfully"))
+        .catch((error) =>
+          message.error(
+            "Failed to save the password: " +
+              (error.response.data.message || "Unknown Error")
+          )
+        );
+    }
   };
 
   return (
@@ -137,6 +169,9 @@ const PasswordTable = () => {
   const [newPasswordInput, setNewPasswordInput] = useState();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updatingRecord, setUpdatingRecord] = useState();
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [shareUsername, setShareUsername] = useState("");
+  const [passwordToShare, setPasswordToShare] = useState(null);
 
   const { data, isLoading } = useSWR(["password-list", keyword], () =>
     axiosInstance
@@ -177,7 +212,28 @@ const PasswordTable = () => {
       clearPasswordListCache();
     });
   };
-  const onClickShare = (record) => {};
+  const showShareModal = (record) => {
+    setIsShareModalOpen(true);
+    setPasswordToShare(record);
+  };
+
+  const handleShareSubmit = () => {
+    axiosInstance
+      .post("/api/passwords/share", {
+        sharedWith: shareUsername,
+        passwordId: passwordToShare._id,
+      })
+      .then(() => {
+        message.success("Password shared successfully");
+        setIsShareModalOpen(false);
+        setShareUsername("");
+        setPasswordToShare(null);
+      })
+      .catch((error) => {
+        message.error("Failed to share password: " + error.response.data.message);
+      });
+  };
+
   return (
     <>
       <Row style={{ paddingLeft: 20 }}>
@@ -195,7 +251,7 @@ const PasswordTable = () => {
         columns={generateColumnConfig(
           onClickUpdate,
           onClickDelete,
-          onClickShare
+          showShareModal
         )}
         dataSource={data}
       />
@@ -216,11 +272,27 @@ const PasswordTable = () => {
 };
 
 const PasswordManagerPage = () => {
+  const [sharedPasswords, setSharedPasswords] = useState([]);
+
+  useEffect(() => {
+    fetchSharedPasswords();
+  }, []);
+
+  const fetchSharedPasswords = async () => {
+    try {
+      const response = await axiosInstance.get("/api/passwords/shared");
+      setSharedPasswords(response.data);
+    } catch (error) {
+      console.error("Error fetching shared passwords:", error);
+    }
+  };
+
   return (
     <>
       <NavBar />
       <CreateNewPassword />
       <PasswordTable />
+      <SharedPasswordList passwords={sharedPasswords} />
     </>
   );
 };
