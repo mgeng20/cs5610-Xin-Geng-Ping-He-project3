@@ -47,9 +47,10 @@ exports.createPassword = async (req, res) => {
 exports.updatePassword = async (req, res) => {
   try {
     const { password } = req.body;
+    const lastUpdated = new Date();
     const updatedPassword = await PasswordModel.findByIdAndUpdate(
       req.params.id,
-      { password },
+      { password, lastUpdated },
       { new: true }
     );
     res.json(updatedPassword);
