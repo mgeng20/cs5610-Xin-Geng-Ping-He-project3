@@ -59,7 +59,9 @@ function generatePassword(length, useAlphanumeric, useSymbols) {
 
   // 确保每个选中的字符集都至少出现一次
   if (useAlphanumeric) {
-    password += getRandomChar("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    password += getRandomChar(
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    );
     password += getRandomChar("0123456789");
   }
   if (useSymbols) {
@@ -80,7 +82,10 @@ function getRandomChar(charset) {
 }
 
 function shuffleString(str) {
-  return str.split("").sort(() => Math.random() - 0.5).join("");
+  return str
+    .split("")
+    .sort(() => Math.random() - 0.5)
+    .join("");
 }
 
 exports.generatePassword = async (req, res) => {
@@ -88,7 +93,11 @@ exports.generatePassword = async (req, res) => {
     const { service, alphabet, numerals, symbols, length } = req.body;
     const { userId } = req.user;
 
-    const generatedPassword = generatePassword(length, alphabet || numerals, symbols);
+    const generatedPassword = generatePassword(
+      length,
+      alphabet || numerals,
+      symbols
+    );
 
     const newPassword = await PasswordModel.create({
       service,
@@ -99,7 +108,9 @@ exports.generatePassword = async (req, res) => {
 
     res.status(201).json(newPassword);
   } catch (error) {
-    res.status(500).json({ message: "Error generating password", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error generating password", error: error.message });
   }
 };
 
@@ -151,31 +162,45 @@ exports.sharePassword = async (req, res) => {
     }
 
     // 检查是否已经发送过共享请求
-    if (password.shareRequests.some(request => request.recipient.toString() === recipient._id.toString())) {
-      return res.status(400).json({ message: "Share request already sent to this user" });
+    if (
+      password.shareRequests.some(
+        (request) => request.recipient.toString() === recipient._id.toString()
+      )
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Share request already sent to this user" });
     }
 
     password.shareRequests.push({
       sender: userId,
-      recipient: recipient._id
+      recipient: recipient._id,
     });
 
     await password.save();
 
     res.json({ message: "Password share request sent successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Error sending password share request", error: error.message });
+    res.status(500).json({
+      message: "Error sending password share request",
+      error: error.message,
+    });
   }
 };
 exports.getShareRequests = async (req, res) => {
   try {
     const { userId } = req.user;
-    const shareRequests = await PasswordModel.find({ 'shareRequests.recipient': userId })
-      .populate('shareRequests.sender', 'username')
-      .select('shareRequests');
+    const shareRequests = await PasswordModel.find({
+      sharedWith: userId,
+    });
+    // .populate("shareRequests.sender", "username")
+    // .select("shareRequests");
     res.json(shareRequests);
   } catch (error) {
-    res.status(500).json({ message: "Error retrieving share requests", error: error.message });
+    res.status(500).json({
+      message: "Error retrieving share requests",
+      error: error.message,
+    });
   }
 };
 exports.sharePassword = async (req, res) => {
@@ -215,7 +240,9 @@ exports.sharePassword = async (req, res) => {
     }
 
     if (password.sharedWith.includes(receiver._id)) {
-      return res.status(400).json({ message: "Password already shared with this user" });
+      return res
+        .status(400)
+        .json({ message: "Password already shared with this user" });
     }
 
     password.sharedWith.push(receiver._id);
@@ -223,7 +250,9 @@ exports.sharePassword = async (req, res) => {
 
     res.json({ message: "Password shared successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Error sharing password", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error sharing password", error: error.message });
   }
 };
 
@@ -235,7 +264,10 @@ exports.getSharedPasswords = async (req, res) => {
       .exec();
     res.json(sharedPasswords);
   } catch (error) {
-    res.status(500).json({ message: "Error retrieving shared passwords", error: error.message });
+    res.status(500).json({
+      message: "Error retrieving shared passwords",
+      error: error.message,
+    });
   }
 };
 
@@ -256,20 +288,24 @@ exports.updateShareRequest = async (req, res) => {
     }
 
     if (shareRequest.recipient.toString() !== userId) {
-      return res.status(403).json({ message: "Not authorized to update this share request" });
+      return res
+        .status(403)
+        .json({ message: "Not authorized to update this share request" });
     }
 
     if (accepted) {
-      shareRequest.status = 'accepted';
+      shareRequest.status = "accepted";
     } else {
-      shareRequest.status = 'rejected';
+      shareRequest.status = "rejected";
     }
 
     await password.save();
 
     res.json({ message: "Share request updated successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Error updating share request", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error updating share request", error: error.message });
   }
 };
 
@@ -277,35 +313,42 @@ exports.getReceivedShareRequests = async (req, res) => {
   try {
     const { userId } = req.user;
     const receivedShareRequests = await PasswordModel.aggregate([
-      { $match: { 'shareRequests.recipient': mongoose.Types.ObjectId(userId) } },
-      { $unwind: '$shareRequests' },
-      { $match: { 'shareRequests.recipient': mongoose.Types.ObjectId(userId) } },
+      {
+        $match: { "shareRequests.recipient": mongoose.Types.ObjectId(userId) },
+      },
+      { $unwind: "$shareRequests" },
+      {
+        $match: { "shareRequests.recipient": mongoose.Types.ObjectId(userId) },
+      },
       {
         $lookup: {
-          from: 'users',
-          localField: 'shareRequests.sender',
-          foreignField: '_id',
-          as: 'shareRequests.sender'
-        }
+          from: "users",
+          localField: "shareRequests.sender",
+          foreignField: "_id",
+          as: "shareRequests.sender",
+        },
       },
-      { $unwind: '$shareRequests.sender' },
+      { $unwind: "$shareRequests.sender" },
       {
         $project: {
-          _id: '$shareRequests._id',
+          _id: "$shareRequests._id",
           password: {
-            _id: '$_id',
-            service: '$service'
+            _id: "$_id",
+            service: "$service",
           },
           sender: {
-            _id: '$shareRequests.sender._id',
-            username: '$shareRequests.sender.username'
+            _id: "$shareRequests.sender._id",
+            username: "$shareRequests.sender.username",
           },
-          status: '$shareRequests.status'
-        }
-      }
+          status: "$shareRequests.status",
+        },
+      },
     ]);
     res.json(receivedShareRequests);
   } catch (error) {
-    res.status(500).json({ message: "Error retrieving received share requests", error: error.message });
+    res.status(500).json({
+      message: "Error retrieving received share requests",
+      error: error.message,
+    });
   }
 };
