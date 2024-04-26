@@ -46,46 +46,54 @@ exports.createPassword = async (req, res) => {
   }
 };
 
-function generatePassword(length, useAlphanumeric, useSymbols) {
+function generatePassword(length, useAlphabet, useNumerals, useSymbols) {
   let charset = "";
   let password = "";
 
-  if (useAlphanumeric) {
-    charset += "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  if (useAlphabet) {
+    charset += "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  }
+  if (useNumerals) {
+    charset += "0123456789";
   }
   if (useSymbols) {
     charset += "!@#$%^&*()_+~`|}{[]:;?><,./-=";
   }
 
   // 确保每个选中的字符集都至少出现一次
-  if (useAlphanumeric) {
-    password += getRandomChar(
-      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    );
-    password += getRandomChar("0123456789");
+  if (useAlphabet) {
+    password += getRandomChar(crypto, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+  }
+  if (useNumerals) {
+    password += getRandomChar(crypto, "0123456789");
   }
   if (useSymbols) {
-    password += getRandomChar("!@#$%^&*()_+~`|}{[]:;?><,./-=");
+    password += getRandomChar(crypto, "!@#$%^&*()_+~`|}{[]:;?><,./-=");
   }
 
   for (let i = password.length; i < length; i++) {
-    password += getRandomChar(charset);
+    password += getRandomChar(crypto, charset);
   }
 
-  password = shuffleString(password);
+  password = shuffleString(crypto, password);
 
   return password;
 }
 
-function getRandomChar(charset) {
-  return charset.charAt(Math.floor(Math.random() * charset.length));
+function getRandomChar(crypto, charset) {
+  const randomBytes = crypto.randomBytes(1);
+  const randomIndex = randomBytes[0] % charset.length;
+  return charset[randomIndex];
 }
 
-function shuffleString(str) {
-  return str
-    .split("")
-    .sort(() => Math.random() - 0.5)
-    .join("");
+function shuffleString(crypto, str) {
+  const arr = str.split("");
+  for (let i = arr.length - 1; i > 0; i--) {
+    const randomBytes = crypto.randomBytes(1);
+    const randomIndex = randomBytes[0] % (i + 1);
+    [arr[i], arr[randomIndex]] = [arr[randomIndex], arr[i]];
+  }
+  return arr.join("");
 }
 
 exports.generatePassword = async (req, res) => {
@@ -93,11 +101,14 @@ exports.generatePassword = async (req, res) => {
     const { service, alphabet, numerals, symbols, length } = req.body;
     const { userId } = req.user;
 
-    const generatedPassword = generatePassword(
-      length,
-      alphabet || numerals,
-      symbols
-    );
+    if (!alphabet && !numerals && !symbols) {
+      return res.status(400).json({ message: "At least one character set must be selected" });
+    }
+    if (length < 4 || length > 50) {
+      return res.status(400).json({ message: "Password length must be between 4 and 50" });
+    }
+
+    const generatedPassword = generatePassword(length, alphabet, numerals, symbols);
 
     const newPassword = await PasswordModel.create({
       service,
@@ -108,9 +119,7 @@ exports.generatePassword = async (req, res) => {
 
     res.status(201).json(newPassword);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error generating password", error: error.message });
+    res.status(500).json({ message: "Error generating password", error: error.message });
   }
 };
 
