@@ -1,7 +1,9 @@
 import { Table } from "antd";
 import React from "react";
+import useSWR from "swr";
+import { axiosInstance } from "../util";
 
-const SharedPasswordList = ({ passwords }) => {
+const SharedPasswordList = () => {
   const columns = [
     {
       title: "Service",
@@ -20,21 +22,26 @@ const SharedPasswordList = ({ passwords }) => {
     },
   ];
 
-  const data = passwords
-    .filter((password) =>
-      password.shareRequests.some((request) => request.status === "accepted")
-    )
-    .map((password) => ({
-      key: password._id,
-      service: password.service,
-      password: password.password,
-      owner: password.user.username,
-    }));
+  const { data = [], isLoading } = useSWR("getSharedPasswords", () =>
+    axiosInstance.get("api/passwords/shared").then((res) => res.data)
+  );
+
+  const passwordList = data.map(({ service, password, user }) => ({
+    service,
+    password,
+    owner: user.username,
+  }));
 
   return (
     <div>
       <h2>Shared Passwords</h2>
-      <Table columns={columns} dataSource={data} pagination={{ pageSize: 5 }} />
+      <Table
+        loading={isLoading}
+        style={{ margin: 20, marginTop: 20 }}
+        columns={columns}
+        dataSource={passwordList}
+        pagination={{ pageSize: 5 }}
+      />
     </div>
   );
 };

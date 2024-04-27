@@ -284,9 +284,9 @@ exports.getShareRequests = async (req, res) => {
 exports.getSharedPasswords = async (req, res) => {
   try {
     const { userId } = req.user;
-    const sharedPasswords = await PasswordModel.find({ sharedWith: userId })
-      .populate("user", "username")
-      .exec();
+    const sharedPasswords = await PasswordModel.find({
+      sharedWith: userId,
+    }).populate("user");
     res.json(sharedPasswords);
   } catch (error) {
     res.status(500).json({

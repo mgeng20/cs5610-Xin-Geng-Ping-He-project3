@@ -9,7 +9,7 @@ import {
   message,
 } from "antd";
 import React, { useEffect, useState } from "react";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { axiosInstance } from "../util";
 
 export default () => {
@@ -47,6 +47,7 @@ export default () => {
       .then(() => {
         requestListSWR.mutate();
         message.success("Request accepted");
+        mutate("getSharedPasswords");
       });
   };
   const requestList = requestListSWR.data ?? [];
