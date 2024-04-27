@@ -1,0 +1,1 @@
+ssh -i xxx.pem ec2-user@xxxxx
