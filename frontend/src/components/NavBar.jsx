@@ -19,8 +19,6 @@ export default () => {
         mode="horizontal"
         selectedKeys={[pathname]}
         style={{
-          flex: 2,
-          minWidth: 0,
           fontSize: 18,
         }}
       >

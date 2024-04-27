@@ -248,6 +248,7 @@ const PasswordTable = () => {
       </Row>
 
       <Table
+        pagination={{ pageSize: 5 }}
         loading={passwordListSWR.isLoading}
         style={{ margin: 20, marginTop: 20 }}
         columns={generateColumnConfig(
@@ -287,147 +288,12 @@ const PasswordTable = () => {
 
 const PasswordManagerPage = () => {
   const [sharedPasswords, setSharedPasswords] = useState([]);
-  const [shareRequests, setShareRequests] = useState([]);
-  const [receivedShareRequests, setReceivedShareRequests] = useState([]);
-
-  // useEffect(() => {
-  //   // fetchSharedPasswords();
-  //   // fetchShareRequests();
-
-  //   const intervalId = setInterval(() => {
-  //     fetchReceivedShareRequests();
-  //   }, 5000);
-
-  //   return () => {
-  //     clearInterval(intervalId);
-  //   };
-  // }, []);
-
-  // const fetchSharedPasswords = async () => {
-  //   try {
-  //     const response = await axiosInstance.get("/api/passwords/shared");
-  //     setSharedPasswords(response.data);
-  //   } catch (error) {
-  //     console.error("Error fetching shared passwords:", error);
-  //   }
-  // };
-
-  // const fetchShareRequests = async () => {
-  //   try {
-  //     const response = await axiosInstance.get("/api/passwords/share-requests");
-  //     setShareRequests(response.data);
-  //   } catch (error) {
-  //     console.error("Error fetching share requests:", error);
-  //   }
-  // };
-
-  // const fetchReceivedShareRequests = async () => {
-  //   try {
-  //     const response = await axiosInstance.get(
-  //       "/api/passwords/received-share-requests"
-  //     );
-  //     setReceivedShareRequests(response.data);
-  //   } catch (error) {
-  //     console.error("Error fetching received share requests:", error);
-  //   }
-  // };
-
-  // const handleAcceptShareRequest = async (passwordId, requestId) => {
-  //   try {
-  //     await axiosInstance.put(
-  //       `/api/passwords/${passwordId}/share-requests/${requestId}`,
-  //       { accepted: true }
-  //     );
-  //     message.success("Share request accepted");
-  //     fetchSharedPasswords();
-  //     fetchShareRequests();
-  //     fetchReceivedShareRequests();
-  //   } catch (error) {
-  //     message.error("Failed to accept share request");
-  //   }
-  // };
-
-  // const handleRejectShareRequest = async (passwordId, requestId) => {
-  //   try {
-  //     await axiosInstance.put(
-  //       `/api/passwords/${passwordId}/share-requests/${requestId}`,
-  //       { accepted: false }
-  //     );
-  //     message.success("Share request rejected");
-  //     fetchShareRequests();
-  //     fetchReceivedShareRequests();
-  //   } catch (error) {
-  //     message.error("Failed to reject share request");
-  //   }
-  // };
 
   return (
     <>
       <NavBar />
       <CreateNewPassword />
       <PasswordTable />
-      {/* <div>
-        <h2>Password Share Requests</h2>
-        {shareRequests.length > 0 ? (
-          shareRequests.map((password) => (
-            <div key={password._id}>
-              {password.shareRequests.map((request) => (
-                <div key={request._id}>
-                  <p>
-                    {request.sender.username} wants to share a password with
-                    you.
-                  </p>
-                  <button
-                    onClick={() =>
-                      handleAcceptShareRequest(password._id, request._id)
-                    }
-                  >
-                    Accept
-                  </button>
-                  <button
-                    onClick={() =>
-                      handleRejectShareRequest(password._id, request._id)
-                    }
-                  >
-                    Reject
-                  </button>
-                </div>
-              ))}
-            </div>
-          ))
-        ) : (
-          <Empty description="No password share requests yet." />
-        )}
-      </div> */}
-
-      {/* <h2>Received Password Share Requests</h2> */}
-      {/* {receivedShareRequests.length > 0 ? (
-          receivedShareRequests.map((request) => (
-            <div key={request._id}>
-              <p>
-                {request.sender.username} wants to share the password for{" "}
-                {request.password.service} with you.
-              </p>
-              {/* <button
-                onClick={() =>
-                  handleAcceptShareRequest(request.password._id, request._id)
-                }
-              >
-                Accept
-              </button>
-              <button
-                onClick={() =>
-                  handleRejectShareRequest(request.password._id, request._id)
-                }
-              >
-                Reject
-              </button> */}
-
-      {/* ))
-        ) : (
-          <Empty description="No received password share requests yet." />
-        )} */}
-
       <SharedPasswordList passwords={sharedPasswords} />
     </>
   );

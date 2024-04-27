@@ -15,7 +15,6 @@ import { axiosInstance } from "../util";
 export default () => {
   const [user, setUser] = useState();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  // const [requestList, setRequestList] = useState([]);
   const [sharedPasswordList, setSharedPasswordList] = useState([]);
 
   const requestListSWR = useSWR(["request-list"], () =>
@@ -56,10 +55,16 @@ export default () => {
     <>
       <Space>
         <Badge count={requestListSWR.data ? requestListSWR.data.length : 0}>
-          <Menu.Item onClick={() => setDrawerOpen(true)}>
+          <Menu.Item
+            style={{
+              fontSize: 18,
+            }}
+            onClick={() => setDrawerOpen(true)}
+          >
             Hello, {user?.username}
           </Menu.Item>
         </Badge>
+
         <Drawer
           title="Share Requests"
           onClose={() => setDrawerOpen(false)}

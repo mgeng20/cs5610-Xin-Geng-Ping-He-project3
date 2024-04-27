@@ -2,6 +2,7 @@ import { Table } from "antd";
 import React from "react";
 import useSWR from "swr";
 import { axiosInstance } from "../util";
+import PasswordCell from "./PasswordCell";
 
 const SharedPasswordList = () => {
   const columns = [
@@ -14,6 +15,9 @@ const SharedPasswordList = () => {
       title: "Password",
       dataIndex: "password",
       key: "password",
+      render(value) {
+        return <PasswordCell password={value} />;
+      },
     },
     {
       title: "Owner",
@@ -33,11 +37,10 @@ const SharedPasswordList = () => {
   }));
 
   return (
-    <div>
+    <div style={{ margin: 20 }}>
       <h2>Shared Passwords</h2>
       <Table
         loading={isLoading}
-        style={{ margin: 20, marginTop: 20 }}
         columns={columns}
         dataSource={passwordList}
         pagination={{ pageSize: 5 }}
