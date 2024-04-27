@@ -1,4 +1,13 @@
-import { Badge, Button, Descriptions, Drawer, Menu, Row, Space } from "antd";
+import {
+  Badge,
+  Button,
+  Descriptions,
+  Drawer,
+  Menu,
+  Row,
+  Space,
+  message,
+} from "antd";
 import React, { useEffect, useState } from "react";
 import useSWR from "swr";
 import { axiosInstance } from "../util";
@@ -15,11 +24,11 @@ export default () => {
 
   const showDrawer = () => {
     setDrawerOpen(true);
-    console.log(requestListSWR.data);
 
     const lst = Object.values(requestListSWR.data).map((item) => [
       item.sender.username,
       item.password.service,
+      item._id,
     ]);
     setRequestList(lst);
   };
@@ -38,10 +47,17 @@ export default () => {
       });
   }, []);
 
+  const removeRequest = (request) => {
+    axiosInstance
+      .delete("/api/passwords/share-requests/" + request.toString())
+      .then(() => {
+        message.success("Request removed");
+      });
+  };
   const handleResponse = (action, request) => {
     if (action === "accept") {
     }
-    requestList.remove(request);
+    removeRequest(request);
   };
   return (
     <>
@@ -58,7 +74,9 @@ export default () => {
                 <Descriptions.Item>
                   <Row style={{ gap: 10 }}>
                     <Button type="primary">Accept</Button>
-                    <Button>Ignore</Button>
+                    <Button onClick={() => removeRequest(item[2])}>
+                      Ignore
+                    </Button>
                   </Row>
                 </Descriptions.Item>
               </React.Fragment>

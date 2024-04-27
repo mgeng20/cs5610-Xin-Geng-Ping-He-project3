@@ -227,7 +227,6 @@ exports.getShareRequests = async (req, res) => {
     })
       .populate("sender")
       .populate("password");
-    // .select("user.username", "service");
     res.json(shareRequests);
   } catch (error) {
     res.status(500).json({
@@ -302,6 +301,17 @@ exports.getSharedPasswords = async (req, res) => {
       message: "Error retrieving shared passwords",
       error: error.message,
     });
+  }
+};
+
+exports.deleteShareRequest = async (req, res) => {
+  try {
+    await ShareRequestModel.findByIdAndDelete(req.params.id);
+    res.json({ message: "Request deleted successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error deleting request", error: error.message });
   }
 };
 
