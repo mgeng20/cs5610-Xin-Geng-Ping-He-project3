@@ -154,7 +154,7 @@ const CreateNewPassword = () => {
 
       <Form.Item {...tailLayout}>
         <Space>
-          <Button type="primary" htmlType="submit" isLoading={isMutating}>
+          <Button type="primary" htmlType="submit" loading={isMutating}>
             Submit
           </Button>
           <Button htmlType="reset">Clear</Button>
@@ -248,7 +248,7 @@ const PasswordTable = () => {
       </Row>
 
       <Table
-        isLoading={passwordListSWR.isLoading}
+        loading={passwordListSWR.isLoading}
         style={{ margin: 20, marginTop: 20 }}
         columns={generateColumnConfig(
           onClickUpdate,

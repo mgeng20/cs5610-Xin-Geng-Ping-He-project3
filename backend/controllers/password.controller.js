@@ -198,20 +198,12 @@ exports.sharePassword = async (req, res) => {
         .json({ message: "Share request already sent to this user" });
     }
 
-    // password.shareRequests.push({
-    //   sender: userId,
-    //   recipient: recipient._id,
-    // });
-
-    // await password.save();
-
     const newShareRequest = await ShareRequestModel.create({
       sender: userId,
       recipient,
       password,
     });
     res.status(201).json(newShareRequest);
-    res.json({ message: "Password share request sent successfully" });
   } catch (error) {
     res.status(500).json({
       message: "Error sending password share request",
@@ -312,6 +304,25 @@ exports.deleteShareRequest = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error deleting request", error: error.message });
+  }
+};
+exports.acceptShareRequest = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const shareRequest = await ShareRequestModel.findById(
+      req.params.id
+    ).populate("password");
+
+    const { password } = shareRequest;
+
+    password.sharedWith.push(userId);
+
+    await password.save();
+    await shareRequest.deleteOne();
+
+    res.status(200).json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ message: "Error accept request", error: e.message });
   }
 };
 

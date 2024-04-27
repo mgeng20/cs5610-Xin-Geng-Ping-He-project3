@@ -18,10 +18,16 @@ router.put(
 );
 router.get("/share-requests", verifyToken, passwordController.getShareRequests);
 router.delete(
-  "/share-requests/:id",
+  "/share-request/:id",
   verifyToken,
   passwordController.deleteShareRequest
 );
+router.put(
+  "/share-request/:id/accept",
+  verifyToken,
+  passwordController.acceptShareRequest
+);
+
 router.put(
   "/:passwordId/share-requests/:requestId",
   verifyToken,
