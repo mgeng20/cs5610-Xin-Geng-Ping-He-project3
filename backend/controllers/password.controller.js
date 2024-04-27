@@ -30,6 +30,7 @@ exports.createPassword = async (req, res) => {
       service,
       user: userId,
     });
+    console.log(existingService);
     if (existingService) {
       res
         .status(400)
@@ -106,6 +107,18 @@ exports.generatePassword = async (req, res) => {
   try {
     const { service, alphabet, numerals, symbols, length } = req.body;
     const { userId } = req.user;
+
+    const existingService = await PasswordModel.findOne({
+      service,
+      user: userId,
+    });
+    console.log(existingService);
+    if (existingService) {
+      res
+        .status(400)
+        .json({ message: "This service already has a password saved." });
+      return;
+    }
 
     if (!alphabet && !numerals && !symbols) {
       return res
